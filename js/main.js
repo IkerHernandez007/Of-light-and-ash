@@ -1,77 +1,25 @@
-// Espera a que todo el DOM (la página HTML) esté completamente cargado y listo.
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LÓGICA PARA NAVEGACIÓN DINÁMICA ---
-    
-    const mainContent = document.getElementById('main-content');
-    
+    // --- LÓGICA PARA RESALTAR EL ENLACE ACTIVO ---
+    // Esto se ejecuta una vez en cada carga de página para saber dónde estamos.
     const highlightActiveLink = () => {
-        // La ruta puede ser '/', '/about.html', '/articles/page.html', etc.
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('.nav-link');
-        
+
         navLinks.forEach(link => {
-            link.classList.remove('active');
-            // Comprueba si el href del enlace coincide con la ruta actual
-            if (link.getAttribute('href') === currentPath) {
+            const linkPath = link.getAttribute('href');
+
+            // Activa el enlace si la ruta coincide exactamente
+            // O si estamos en la raíz ('/') y el enlace es para la página de inicio.
+            if (linkPath === currentPath || (currentPath === '/' && linkPath === '/index.html')) {
                 link.classList.add('active');
             }
         });
-        // Caso especial para la página de inicio
-        if (currentPath === '/' || currentPath === '/index.html') {
-            document.querySelector('.nav-link[href="/index.html"]').classList.add('active');
-        }
     };
-
-    const loadContent = async (url) => {
-        try {
-            document.body.classList.add('fade-out');
-            await new Promise(resolve => setTimeout(resolve, 400));
-
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Respuesta de red no fue ok.');
-            
-            const newContentHTML = await response.text();
-            const parser = new DOMParser();
-            const newDoc = parser.parseFromString(newContentHTML, 'text/html');
-            const newMainContent = newDoc.querySelector('#main-content').innerHTML;
-
-            mainContent.innerHTML = newMainContent;
-            window.history.pushState({}, '', url);
-            document.title = newDoc.title;
-            highlightActiveLink();
-            document.body.classList.remove('fade-out');
-        } catch (error) {
-            console.error('Error al cargar la página:', error);
-            link.href="/index.html";
-            mainContent.innerHTML = `<p>Error al cargar el contenido. Por favor, intenta de nuevo.</p>`;
-            document.body.classList.remove('fade-out');
-        }
-    };
-
-    document.body.addEventListener('click', (event) => {
-        const link = event.target.closest('a');
-        if (link && link.href.startsWith(window.location.origin) && !link.href.includes('#')) {
-            event.preventDefault();
-            if (link.href !== window.location.href) {
-                loadContent(link.href);
-            }
-        }
-    });
-
-    window.addEventListener('popstate', () => {
-        loadContent(window.location.href);
-    });
-
-    highlightActiveLink();
-
 
     // --- LÓGICA PARA EL BOTÓN DE VOLVER ARRIBA ---
-
-    // Ahora estamos SEGUROS de que el botón existe antes de intentar encontrarlo
+    // Esto no cambia y funciona perfectamente.
     const btnScrollTop = document.getElementById('btn-scroll-top');
-
-    // Verificamos que el botón realmente exista antes de añadirle eventos
     if (btnScrollTop) {
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
@@ -89,4 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-}); // Fin del addEventListener 'DOMContentLoaded'
+    // Ejecutamos la función para resaltar el enlace al cargar la página.
+    highlightActiveLink();
+
+});
